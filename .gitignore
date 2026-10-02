@@ -1,0 +1,16 @@
+# tooling state
+venv/
+models/
+wav/
+.cache/
+__pycache__/
+
+# deal documents and outputs: this repo is PUBLIC, keep these local only
+*.opus
+*.pdf
+*.jpg
+*.jpeg
+*.png
+_chat.txt
+transcripts/
+ANALYSIS.md
