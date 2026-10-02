@@ -133,7 +133,10 @@ class SherpaWhisperBackend:
         subprocess.run(["tar", "-xjf", str(tarball), "-C", str(mdir.parent)], check=True)
         tarball.unlink()
 
-    def _chunks(self, audio, sr, max_len=28.0, min_len=4.0):
+    chunk_len = 28.0
+
+    def _chunks(self, audio, sr, max_len=None, min_len=4.0):
+        max_len = max_len or self.chunk_len
         """Whisper via sherpa handles <=30 s per call. Split long notes at the quietest point
         before the limit so we do not cut mid-word."""
         import numpy as np
@@ -240,6 +243,8 @@ def build_all(opus_files, tdir: Path, chat_lines, me_prefixes):
             out.append("[no speech detected]")
         for s in segs:
             out.append(f"[{fmt(s['start'])} - {fmt(s['end'])}] {s['text']}{' [unclear]' if s['unclear'] else ''}")
+        for label, lines in (meta.get("passes") or {}).items():
+            out += ["", f"raw pass ({label}):", ""] + [f"    {ln}" for ln in lines]
         out.append("")
     text = "\n".join(out)
     (tdir / "ALL_TRANSCRIPTS.md").write_text(text, encoding="utf-8")
@@ -256,6 +261,7 @@ def main():
     ap.add_argument("--force", action="store_true", help="re-transcribe notes that already have a transcript")
     ap.add_argument("--print", action="store_true", help="print ALL_TRANSCRIPTS.md when done")
     ap.add_argument("--me", default=",".join(sorted(DEFAULT_ME)), help="comma list of note prefixes spoken by JS")
+    ap.add_argument("--chunk", type=float, default=28.0, help="max seconds per decode window (sherpa backend)")
     args = ap.parse_args()
 
     base = Path(args.dir).resolve()
@@ -273,6 +279,8 @@ def main():
 
     if todo:
         backend = pick_backend(args.backend, args.model)
+        if hasattr(backend, "chunk_len"):
+            backend.chunk_len = args.chunk
         for src in todo:
             wav = to_wav(src, wav_dir, args.force)
             audio_len = wave.open(str(wav)).getnframes() / 16000

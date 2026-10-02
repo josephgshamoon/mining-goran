@@ -22,3 +22,11 @@ backend order: faster-whisper (model from huggingface.co) then sherpa-onnx whisp
 
 this repository is public. `.gitignore` keeps the chat export, audio, invoices,
 screenshots, transcripts and analysis out of git. do not force-add them.
+
+second opinion and consensus:
+
+    ./venv/bin/python transcribe.py --dir <copy-of-notes> --model medium --backend sherpa   # second pass
+    ./venv/bin/python consensus.py --primary <copy-of-notes> --secondary <dir-with-first-pass> --out transcripts
+
+words both passes agree on are kept, disagreements are written as [unclear: "a" / "b"].
+`--chunk 20` shortens the decode window if a model drops part of a long note.
