@@ -14,3 +14,6 @@ __pycache__/
 _chat.txt
 transcripts/
 ANALYSIS.md
+sean/
+*.wav
+*.m4a
