@@ -17,3 +17,5 @@ ANALYSIS.md
 sean/
 *.wav
 *.m4a
+*.mp4
+video_frames/
